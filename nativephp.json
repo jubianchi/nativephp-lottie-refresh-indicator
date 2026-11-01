@@ -28,5 +28,8 @@
                 }
             ]
         }
+    },
+    "hooks": {
+        "copy_assets": "nativephp:lottie-refresh-indicator:copy-assets"
     }
 }

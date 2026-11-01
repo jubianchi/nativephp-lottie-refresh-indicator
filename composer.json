@@ -4,6 +4,7 @@
     "type": "nativephp-plugin",
     "require": {
         "php": "^8.3",
+        "ext-zip": "*",
         "nativephp/mobile-ui": "*"
     },
     "autoload": {
