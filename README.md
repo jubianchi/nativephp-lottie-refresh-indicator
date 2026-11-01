@@ -5,7 +5,8 @@ A [NativePHP Mobile](https://nativephp.com) plugin that replaces the pull-to-ref
 animation, on Android and iOS.
 
 While the list is pulled, the animation follows the pull: a logo that draws itself in is fully drawn when the pull
-reaches the refresh threshold. While the list refreshes, the animation loops, starting from where the pull left it.
+reaches the refresh threshold. While the list refreshes, the animation plays back and forth from where the pull left
+it, so it never jumps back to its first frame: a logo that draws itself in undraws and redraws instead of blanking.
 
 > [!IMPORTANT]
 > This plugin registers an indicator named `lottie` with mobile-ui's pull-to-refresh indicator registry. That registry
