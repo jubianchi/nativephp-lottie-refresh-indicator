@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -14,6 +15,7 @@ import androidx.compose.ui.semantics.semantics
 import com.airbnb.lottie.LottieComposition
 import com.airbnb.lottie.compose.LottieAnimatable
 import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieClipSpec
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieAnimatable
@@ -47,34 +49,70 @@ private fun LottieComposition.markerProgress(name: String): ClosedFloatingPointR
 }
 
 /**
- * Loops back and forth from [from], the pull at release, so the animation
- * never jumps: a release happens at the end of the pull, and wrapping from
- * the end to the start would blank a draw-in logo.
+ * Plays the refresh from where [pull] left the animation, without a jump:
+ * up to the refresh segment, then that segment in a forward loop. A loop
+ * clipped to the segment would snap to the segment's start on its first
+ * frame if it started before it, hence the separate run up to it.
+ *
+ * Without a refresh segment, the pull segment plays back and forth
+ * instead: looping it forward would wrap to its start, which is blank for
+ * a draw-in logo.
  */
-suspend fun LottieAnimatable.playRefreshLoop(composition: LottieComposition, from: Float) {
+suspend fun LottieAnimatable.playRefreshLoop(composition: LottieComposition, segments: LottieRefreshSegments, pull: Float) {
+    val start = segments.pullProgress(pull)
+    val refresh = segments.refresh
+    if (refresh == null) {
+        animate(
+            composition,
+            iterations = LottieConstants.IterateForever,
+            reverseOnRepeat = true,
+            clipSpec = LottieClipSpec.Progress(segments.pull.start, segments.pull.endInclusive),
+            initialProgress = start,
+        )
+        return
+    }
+
+    if (start < refresh.start) {
+        animate(
+            composition,
+            iteration = 1,
+            iterations = 1,
+            reverseOnRepeat = false,
+            clipSpec = LottieClipSpec.Progress(start, refresh.start),
+            initialProgress = start,
+        )
+    }
     animate(
         composition,
+        iteration = 1,
         iterations = LottieConstants.IterateForever,
-        reverseOnRepeat = true,
-        initialProgress = from.coerceIn(0f, 1f),
+        reverseOnRepeat = false,
+        clipSpec = LottieClipSpec.Progress(refresh.start, refresh.endInclusive),
+        initialProgress = start.coerceIn(refresh.start, refresh.endInclusive),
     )
 }
 
+/**
+ * Plays the Lottie animation at the APK asset path the options name: its
+ * `pull` segment as the list is pulled, its `refresh` segment in a loop
+ * while refreshing. mobile-ui draws the disc around it.
+ */
 @Composable
 fun LottieRefreshIndicator(scope: RefreshIndicatorScope) {
     val asset = lottieRefreshIndicatorAsset(scope.options, isSystemInDarkTheme()) ?: return
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset(asset))
+    val segments = remember(composition) { composition?.refreshSegments() ?: LottieRefreshSegments.Whole }
     val loop = rememberLottieAnimatable()
     LaunchedEffect(composition, scope.isRefreshing) {
         val loaded = composition
         if (scope.isRefreshing && loaded != null) {
-            loop.playRefreshLoop(loaded, scope.progress())
+            loop.playRefreshLoop(loaded, segments, scope.progress())
         }
     }
 
     LottieAnimation(
         composition,
-        progress = { lottieRefreshIndicatorProgress(scope.progress(), scope.isRefreshing, loop.isPlaying, loop.progress) },
+        progress = { lottieRefreshIndicatorProgress(scope.progress(), scope.isRefreshing, loop.isPlaying, loop.progress, segments) },
         modifier = Modifier
             .fillMaxSize()
             .testTag(LOTTIE_REFRESH_INDICATOR_TAG)
