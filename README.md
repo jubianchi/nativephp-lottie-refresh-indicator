@@ -5,8 +5,9 @@ A [NativePHP Mobile](https://nativephp.com) plugin that replaces the pull-to-ref
 animation, on Android and iOS.
 
 While the list is pulled, the animation follows the pull: a logo that draws itself in is fully drawn when the pull
-reaches the refresh threshold. While the list refreshes, the animation plays back and forth from where the pull left
-it, so it never jumps back to its first frame: a logo that draws itself in undraws and redraws instead of blanking.
+reaches the refresh threshold. While the list refreshes, the animation loops, carrying on from where the pull left it
+without a jump. Markers in the animation can split it into a part the pull plays and a part the refresh loops over
+(see [Markers](#markers)).
 
 > [!IMPORTANT]
 > This plugin registers an indicator named `lottie` with mobile-ui's pull-to-refresh indicator registry. That registry
@@ -92,6 +93,42 @@ If the app doesn't install this plugin, the list keeps the platform spinner.
 | `dark_asset` | No       | Animation to play instead of `asset` in dark mode. Defaults to `asset`.                       |
 
 Without `asset`, the indicator draws nothing: the list still refreshes, with an empty indicator.
+
+### Markers
+
+Two markers in the animation (its `markers` list, which After Effects exports from composition markers), named
+`pull` and `refresh`, tell the indicator which part to play when:
+
+- **`pull`**: the part the pull plays. The pull's progress, from rest to the refresh threshold, runs from the start to
+  the end of this marker.
+- **`refresh`**: the part the refresh loops over, always forward: when it reaches its end, it starts again from its
+  start. Make the marker's last frame look like its first, and the loop has no visible seam.
+
+For example, a 120-frame animation that draws a logo in over its first 60 frames, then animates it over the next 60,
+ending as it started:
+
+```json
+"markers": [
+    {"cm": "pull", "tm": 0, "dr": 60},
+    {"cm": "refresh", "tm": 60, "dr": 60}
+]
+```
+
+When the list starts refreshing, the animation carries on from where the pull left it: from the start of `refresh`
+after a full pull, or through the rest of `pull` first when the list starts refreshing before the pull reaches the
+threshold. `refresh` should start where `pull` ends, so the animation never jumps from one to the other.
+
+Without these markers:
+
+- **No marker**: the pull plays the whole animation, and the refresh plays it back and forth, from its end to its start
+  and back. Looping it forward would go back to its first frame on every turn, which is blank for a logo that draws
+  itself in.
+- **`pull` only**: the pull plays the marker, and the refresh plays the marker back and forth, the same way.
+- **`refresh` only**: the pull plays what comes before the marker (the whole animation if the marker starts at the
+  first frame), and the refresh loops the marker forward.
+
+Other markers are ignored, and so is a marker lasting no frame. Name the markers in lowercase: lottie-ios matches
+marker names exactly, while lottie-android ignores case.
 
 ### Animation files
 
