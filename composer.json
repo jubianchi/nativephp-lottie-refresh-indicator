@@ -1,0 +1,24 @@
+{
+    "name": "jubianchi/nativephp-lottie-refresh-indicator",
+    "description": "A Lottie pull-to-refresh indicator for nativephp/mobile-ui lists, on Android and iOS",
+    "type": "nativephp-plugin",
+    "require": {
+        "php": "^8.3",
+        "nativephp/mobile-ui": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jubianchi\\NativePHP\\LottieRefreshIndicator\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jubianchi\\NativePHP\\LottieRefreshIndicator\\LottieRefreshIndicatorServiceProvider"
+            ]
+        },
+        "nativephp": {
+            "manifest": "nativephp.json"
+        }
+    }
+}

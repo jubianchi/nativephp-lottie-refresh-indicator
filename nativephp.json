@@ -1,0 +1,32 @@
+{
+    "namespace": "LottieRefreshIndicator",
+    "platforms": [
+        "android",
+        "ios"
+    ],
+    "bridge_functions": [],
+    "android": {
+        "min_version": 26,
+        "init_function": "com.jubianchi.nativephp.lottierefreshindicator.registerLottieRefreshIndicator",
+        "dependencies": {
+            "implementation": [
+                "com.airbnb.android:lottie-compose:6.7.1"
+            ]
+        }
+    },
+    "ios": {
+        "min_version": "18.2",
+        "init_function": "registerLottieRefreshIndicator",
+        "dependencies": {
+            "swift_packages": [
+                {
+                    "url": "https://github.com/airbnb/lottie-spm.git",
+                    "version": "4.6.0",
+                    "products": [
+                        "Lottie"
+                    ]
+                }
+            ]
+        }
+    }
+}
