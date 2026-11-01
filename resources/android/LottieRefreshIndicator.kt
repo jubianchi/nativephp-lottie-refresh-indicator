@@ -33,11 +33,19 @@ fun registerLottieRefreshIndicator(context: Context) {
     NativeUIRefreshIndicators.register("lottie") { scope -> LottieRefreshIndicator(scope) }
 }
 
-/**
- * Plays the Lottie animation at the APK asset path the options name: it
- * draws in as the list is pulled and loops while refreshing. mobile-ui
- * draws the disc around it.
- */
+/** The segments the composition's `pull` and `refresh` markers give. */
+fun LottieComposition.refreshSegments(): LottieRefreshSegments =
+    lottieRefreshSegments(markerProgress("pull"), markerProgress("refresh"))
+
+private fun LottieComposition.markerProgress(name: String): ClosedFloatingPointRange<Float>? {
+    val marker = getMarker(name) ?: return null
+    // The parser stores the end frame as `op - 0.01`, so a marker ending at
+    // `op` lands just past 1.
+    val start = getProgressForFrame(marker.startFrame).coerceIn(0f, 1f)
+    val end = getProgressForFrame(marker.startFrame + marker.durationFrames).coerceIn(0f, 1f)
+    return start..end
+}
+
 /**
  * Loops back and forth from [from], the pull at release, so the animation
  * never jumps: a release happens at the end of the pull, and wrapping from
