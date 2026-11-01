@@ -19,7 +19,7 @@ without a jump. Markers in the animation can split it into a part the pull plays
 - `nativephp/mobile` 4.7 or later
 - `nativephp/mobile-ui` with the indicator registry (branch `feat/refresh-indicator-registry`)
 - Android 8.0 (API 26) or later, iOS 18.2 or later
-- The animations, in the app's Android assets and iOS bundle (see [Animation files](#animation-files))
+- PHP's `zip` extension, to convert dotLottie files for iOS
 
 ## Installation
 
@@ -132,19 +132,50 @@ marker names exactly, while lottie-android ignores case.
 
 ### Animation files
 
-The plugin doesn't ship or copy animations: they must already be in the app, under the path `asset` gives.
+Put your animations, dotLottie (`.lottie`) or Lottie JSON (`.json`) files, in `resources/animations` in your app.
+When the app is built, the plugin copies every one of them, keeping its path, under `animations/` in the native
+projects, so `resources/animations/brand/logo.lottie` is the option `'asset' => 'animations/brand/logo.lottie'` on both
+platforms. Files with other extensions are left out.
 
-- **Android** loads `asset` from the APK's assets, so `animations/splash.lottie` is
+To keep them elsewhere, set `LOTTIE_REFRESH_INDICATOR_PATH` in `.env`, or publish the configuration and change `path`.
+A relative path is read from the app's root:
+
+```bash
+php artisan vendor:publish --tag=lottie-refresh-indicator-config
+```
+
+One directory with a default, rather than a list of files to configure, keeps the option values predictable: an
+animation's `asset` is its path in that directory, prefixed with `animations/`. That default is also where the
+`s2br/nativephp-mobile-splashscreen` plugin reads its animations from (see
+[With the splashscreen plugin](#with-the-splashscreen-plugin)).
+
+Where the files go:
+
+- **Android** loads `asset` from the APK's assets: `animations/splash.lottie` is copied to
   `app/src/main/assets/animations/splash.lottie` in the generated Android project.
-- **iOS** looks `asset` up in the app bundle, first in its own directory, then at the root of the bundle, with the same
-  name and extension. The generated Xcode project copies resources flat, so a file placed at
-  `NativePHP/Resources/animations/splash.lottie` ends up as `splash.lottie` at the root of the bundle, and
-  `animations/splash.lottie` still finds it.
+- **iOS** looks `asset` up in the app bundle: `animations/splash.lottie` is copied to
+  `NativePHP/Resources/animations/splash.lottie` in the generated Xcode project. The project copies resources flat, so
+  the file ends up as `splash.lottie` at the root of the bundle; the indicator looks in the asset's own directory, then
+  at the root, so `animations/splash.lottie` still finds it. Because of that flattening, two animations with the same
+  file name in different directories clash on iOS: the copy warns about it, give them different names.
+- **dotLottie v2** files are converted to v1 for iOS, since lottie-ios only reads v1 files; Android gets them as they
+  are. The conversion is the splashscreen plugin's: it keeps the first animation of the file and drops fonts, layer
+  effects and masks, background layers (named `Background`) and text layers, as well as the file's images. If a file
+  can't be converted, it is copied as is with a warning. JSON files and dotLottie v1 files are copied as they are.
 
-The `s2br/nativephp-mobile-splashscreen` plugin copies its splash animations to exactly these places (as
-`animations/<name>.lottie`), so a refresh indicator can reuse the splash animation with
-`'asset' => 'animations/splash.lottie'`. That plugin also converts dotLottie v2 files to v1 for iOS, as it finds
-lottie-ios doesn't play v2 files: an animation you ship yourself should be a dotLottie v1 or a JSON file to play on iOS.
+Copying again gives the same files, and an app without the directory builds as before, with nothing copied. The plugin
+never deletes files: an animation removed from the directory stays in the native project until it is regenerated.
+
+#### With the splashscreen plugin
+
+The splashscreen plugin copies its configured animations to the same places (`animations/<name>.lottie`), from
+`resources/animations` by default. Both plugins then copy the same files, which is fine: for the same source file,
+both write the same content, including the iOS conversion, so the result doesn't depend on which plugin runs last.
+
+If the two copy different files under the same name (for example a splash animation configured from another
+directory, with the same file name as one in `resources/animations`), the last plugin to run wins. This plugin warns
+when it replaces a different file, but it can't tell when the splashscreen plugin runs after it: give such files
+different names.
 
 ## Platform notes
 
@@ -167,8 +198,17 @@ lottie-ios doesn't play v2 files: an animation you ship yourself should be a dot
 
 ## Development
 
-The plugin's logic is tested on both platforms. Neither suite renders a Lottie animation: Robolectric can't load real
-Lottie assets, and the iOS suite runs on macOS without UIKit.
+The plugin's logic is tested in PHP and on both platforms. Neither native suite renders a Lottie animation: Robolectric
+can't load real Lottie assets, and the iOS suite runs on macOS without UIKit.
+
+### PHP
+
+The hook copying the animations is tested with Pest, including a run through the core's plugin hook runner:
+
+```bash
+composer install
+composer test
+```
 
 ### Android
 
