@@ -6,3 +6,4 @@
 /tests/android/build/
 /tests/ios/.build/
 /tests/ios/.swiftpm/
+/.phpunit.cache/

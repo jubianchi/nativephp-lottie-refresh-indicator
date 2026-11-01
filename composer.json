@@ -11,6 +11,23 @@
             "Jubianchi\\NativePHP\\LottieRefreshIndicator\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Jubianchi\\NativePHP\\LottieRefreshIndicator\\Tests\\": "tests/php/"
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "pestphp/pest": "^3.0"
+    },
+    "scripts": {
+        "test": "pest"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
