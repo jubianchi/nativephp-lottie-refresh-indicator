@@ -15,21 +15,20 @@ without a jump. Markers in the animation can split it into a part the pull plays
 
 > [!IMPORTANT]
 > This plugin registers an indicator named `lottie` with mobile-ui's pull-to-refresh indicator registry. That registry
-> is not released yet: it lives on mobile-ui's `feat/refresh-indicator-registry` branch. Until it is released, install
-> mobile-ui from that branch (see [Installation](#installation)).
+> is not available in any published version of mobile-ui yet, so the plugin can't be used until it is.
 
 ## Requirements
 
 - `nativephp/mobile` 4.7 or later
-- `nativephp/mobile-ui` with the indicator registry (branch `feat/refresh-indicator-registry`)
+- `nativephp/mobile-ui` with the pull-to-refresh indicator registry, which no published version ships yet
 - Android 8.0 (API 26) or later, iOS 18.2 or later
 - PHP's `zip` extension, to convert dotLottie files for iOS
 
 ## Installation
 
-Neither this plugin nor mobile-ui's indicator registry is on Packagist yet, so add both as
-[path repositories](https://getcomposer.org/doc/05-repositories.md#path) in your app's `composer.json`, pointing at
-local checkouts:
+Neither this plugin nor mobile-ui's indicator registry is on Packagist yet. If you have a local checkout of mobile-ui
+that includes the registry, add it and this plugin as
+[path repositories](https://getcomposer.org/doc/05-repositories.md#path) in your app's `composer.json`:
 
 ```json
 {
@@ -46,8 +45,8 @@ local checkouts:
 }
 ```
 
-`../mobile-ui` must have the `feat/refresh-indicator-registry` branch checked out (a git worktree of that branch works
-too). Then require both at their development version and register the plugin with NativePHP:
+`../mobile-ui` must have the code with the registry checked out. Then require both at their development version and
+register the plugin with NativePHP:
 
 ```bash
 composer require "nativephp/mobile-ui:@dev" "jubianchi/nativephp-lottie-refresh-indicator:@dev"
