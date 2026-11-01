@@ -11,6 +11,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.compose.LottieAnimatable
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -36,6 +38,20 @@ fun registerLottieRefreshIndicator(context: Context) {
  * draws in as the list is pulled and loops while refreshing. mobile-ui
  * draws the disc around it.
  */
+/**
+ * Loops back and forth from [from], the pull at release, so the animation
+ * never jumps: a release happens at the end of the pull, and wrapping from
+ * the end to the start would blank a draw-in logo.
+ */
+suspend fun LottieAnimatable.playRefreshLoop(composition: LottieComposition, from: Float) {
+    animate(
+        composition,
+        iterations = LottieConstants.IterateForever,
+        reverseOnRepeat = true,
+        initialProgress = from.coerceIn(0f, 1f),
+    )
+}
+
 @Composable
 fun LottieRefreshIndicator(scope: RefreshIndicatorScope) {
     val asset = lottieRefreshIndicatorAsset(scope.options, isSystemInDarkTheme()) ?: return
@@ -44,11 +60,7 @@ fun LottieRefreshIndicator(scope: RefreshIndicatorScope) {
     LaunchedEffect(composition, scope.isRefreshing) {
         val loaded = composition
         if (scope.isRefreshing && loaded != null) {
-            loop.animate(
-                loaded,
-                iterations = LottieConstants.IterateForever,
-                initialProgress = scope.progress().coerceIn(0f, 1f),
-            )
+            loop.playRefreshLoop(loaded, scope.progress())
         }
     }
 
