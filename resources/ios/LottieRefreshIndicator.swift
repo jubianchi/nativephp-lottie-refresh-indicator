@@ -32,6 +32,7 @@ struct LottieRefreshAnimation: UIViewRepresentable {
 
     final class Coordinator {
         var asset: String?
+        var segments = LottieRefreshSegments.whole
         var playback = LottieRefreshPlayback()
     }
 
@@ -58,9 +59,10 @@ struct LottieRefreshAnimation: UIViewRepresentable {
             coordinator.asset = asset
             coordinator.playback = LottieRefreshPlayback()
             Self.load(asset, into: view)
+            coordinator.segments = Self.segments(of: view.animation)
         }
 
-        switch coordinator.playback.update(progress: progress, isRefreshing: isRefreshing) {
+        switch coordinator.playback.update(progress: progress, isRefreshing: isRefreshing, segments: coordinator.segments) {
         case .show(let pull):
             view.currentProgress = pull
         case .loop(let segments):
@@ -75,11 +77,32 @@ struct LottieRefreshAnimation: UIViewRepresentable {
         view.play(
             fromProgress: segment.from,
             toProgress: segment.to,
-            loopMode: segment.autoReverses ? .autoReverse : .playOnce
+            loopMode: loopMode(segment.mode)
         ) { [weak view] finished in
             guard finished, let view else { return }
             play(segments.dropFirst(), on: view)
         }
+    }
+
+    private static func loopMode(_ mode: LottieRefreshSegment.Mode) -> LottieLoopMode {
+        switch mode {
+        case .once: .playOnce
+        case .loop: .loop
+        case .autoReverse: .autoReverse
+        }
+    }
+
+    /// The segments the animation's `pull` and `refresh` markers give.
+    private static func segments(of animation: LottieAnimation?) -> LottieRefreshSegments {
+        guard let animation else { return .whole }
+        func range(_ marker: String) -> ClosedRange<Double>? {
+            guard let start = animation.frameTime(forMarker: marker),
+                  let duration = animation.durationFrameTime(forMarker: marker) else { return nil }
+            let lower = Double(animation.progressTime(forFrame: start))
+            let upper = Double(animation.progressTime(forFrame: start + duration))
+            return upper >= lower ? lower...upper : nil
+        }
+        return .markers(pull: range("pull"), refresh: range("refresh"))
     }
 
     /// Loads synchronously, from Lottie's cache after the first pull: the
