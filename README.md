@@ -1,5 +1,9 @@
 # nativephp-lottie-refresh-indicator
 
+> [!WARNING]
+> This plugin relies on a pull-to-refresh indicator registry in `nativephp/mobile-ui` that is not published yet. It
+> does not work with any released version of mobile-ui for now.
+
 A [NativePHP Mobile](https://nativephp.com) plugin that replaces the pull-to-refresh spinner of
 [nativephp/mobile-ui](https://github.com/NativePHP/mobile-ui) lists with a [Lottie](https://airbnb.io/lottie/)
 animation, on Android and iOS.
