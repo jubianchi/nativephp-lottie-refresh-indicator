@@ -1,8 +1,12 @@
 # nativephp-lottie-refresh-indicator
 
 > [!WARNING]
-> This plugin relies on a pull-to-refresh indicator registry in `nativephp/mobile-ui` that is not published yet. It
-> does not work with any released version of mobile-ui for now.
+> This plugin registers an indicator named `lottie` in the pull-to-refresh indicator registry of `nativephp/mobile-ui`.
+> That registry is not available in any published version of mobile-ui yet, so the plugin can't be used until it is.
+
+| Android                                                    | iOS                                                |
+|:----------------------------------------------------------:|:--------------------------------------------------:|
+| <img src="art/android.gif" width="320" alt="On Android">  | <img src="art/ios.gif" width="320" alt="On iOS">   |
 
 A [NativePHP Mobile](https://nativephp.com) plugin that replaces the pull-to-refresh spinner of
 [nativephp/mobile-ui](https://github.com/NativePHP/mobile-ui) lists with a [Lottie](https://airbnb.io/lottie/)
@@ -12,14 +16,6 @@ While the list is pulled, the animation follows the pull: a logo that draws itse
 reaches the refresh threshold. While the list refreshes, the animation loops, carrying on from where the pull left it
 without a jump. Markers in the animation can split it into a part the pull plays and a part the refresh loops over
 (see [Markers](#markers)).
-
-> [!IMPORTANT]
-> This plugin registers an indicator named `lottie` with mobile-ui's pull-to-refresh indicator registry. That registry
-> is not available in any published version of mobile-ui yet, so the plugin can't be used until it is.
-
-| Android                                                    | iOS                                                |
-|:----------------------------------------------------------:|:--------------------------------------------------:|
-| <img src="art/android.gif" width="320" alt="On Android">  | <img src="art/ios.gif" width="320" alt="On iOS">   |
 
 ## Requirements
 
