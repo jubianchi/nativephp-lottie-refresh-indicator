@@ -103,11 +103,41 @@ struct LottieRefreshPlaybackTests {
         #expect(playback.update(progress: 1.6, isRefreshing: false) == .show(1))
     }
 
-    @Test func theLoopStartsWhereThePullLeftTheAnimation() {
+    @Test func theLoopCarriesOnFromAPartialPullThenGoesBackAndForth() {
         var playback = LottieRefreshPlayback()
         _ = playback.update(progress: 0.9, isRefreshing: false)
 
-        #expect(playback.update(progress: 1, isRefreshing: true) == .loop(from: 0.9))
+        #expect(playback.update(progress: 1, isRefreshing: true) == .loop([
+            LottieRefreshSegment(from: 0.9, to: 1, autoReverses: false),
+            LottieRefreshSegment(from: 1, to: 0, autoReverses: true),
+        ]))
+    }
+
+    @Test func theLoopFromAFullPullTurnsBackAtOnce() {
+        var playback = LottieRefreshPlayback()
+        _ = playback.update(progress: 1, isRefreshing: false)
+
+        #expect(playback.update(progress: 1, isRefreshing: true) == .loop([
+            LottieRefreshSegment(from: 1, to: 0, autoReverses: true),
+        ]))
+    }
+
+    @Test(arguments: [0, 0.3, 0.9, 0.999, 1])
+    func theLoopNeverJumps(pull: Double) throws {
+        var playback = LottieRefreshPlayback()
+        _ = playback.update(progress: pull, isRefreshing: false)
+
+        guard case .loop(let segments) = playback.update(progress: 1, isRefreshing: true) else {
+            Issue.record("the refresh did not start a loop")
+            return
+        }
+        let first = try #require(segments.first)
+        #expect(first.from == pull)
+        for (previous, next) in zip(segments, segments.dropFirst()) {
+            #expect(next.from == previous.to)
+        }
+        #expect(segments.last?.autoReverses == true)
+        #expect(segments.dropLast().allSatisfy { !$0.autoReverses })
     }
 
     @Test func theLoopStartsOnce() {
@@ -121,7 +151,9 @@ struct LottieRefreshPlaybackTests {
     @Test func aRefreshShownWithoutAPullLoopsFromTheGivenProgress() {
         var playback = LottieRefreshPlayback()
 
-        #expect(playback.update(progress: 1, isRefreshing: true) == .loop(from: 1))
+        #expect(playback.update(progress: 1, isRefreshing: true) == .loop([
+            LottieRefreshSegment(from: 1, to: 0, autoReverses: true),
+        ]))
     }
 
     @Test func thePullTakesOverWhenTheRefreshEnds() {
@@ -130,6 +162,9 @@ struct LottieRefreshPlaybackTests {
         _ = playback.update(progress: 1, isRefreshing: true)
 
         #expect(playback.update(progress: 0.6, isRefreshing: false) == .show(0.6))
-        #expect(playback.update(progress: 1, isRefreshing: true) == .loop(from: 0.6))
+        #expect(playback.update(progress: 1, isRefreshing: true) == .loop([
+            LottieRefreshSegment(from: 0.6, to: 1, autoReverses: false),
+            LottieRefreshSegment(from: 1, to: 0, autoReverses: true),
+        ]))
     }
 }

@@ -63,15 +63,22 @@ struct LottieRefreshAnimation: UIViewRepresentable {
         switch coordinator.playback.update(progress: progress, isRefreshing: isRefreshing) {
         case .show(let pull):
             view.currentProgress = pull
-        case .loop(let from) where from >= 1:
-            view.play(fromProgress: 0, toProgress: 1, loopMode: .loop)
-        case .loop(let from):
-            view.play(fromProgress: from, toProgress: 1, loopMode: .playOnce) { [weak view] finished in
-                guard finished else { return }
-                view?.play(fromProgress: 0, toProgress: 1, loopMode: .loop)
-            }
+        case .loop(let segments):
+            Self.play(segments[...], on: view)
         case .keep:
             break
+        }
+    }
+
+    private static func play(_ segments: ArraySlice<LottieRefreshSegment>, on view: LottieAnimationView) {
+        guard let segment = segments.first else { return }
+        view.play(
+            fromProgress: segment.from,
+            toProgress: segment.to,
+            loopMode: segment.autoReverses ? .autoReverse : .playOnce
+        ) { [weak view] finished in
+            guard finished, let view else { return }
+            play(segments.dropFirst(), on: view)
         }
     }
 

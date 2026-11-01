@@ -40,11 +40,19 @@ struct LottieRefreshIndicatorResource: Equatable {
 
 /// What the animation does as the list reports its pull: it follows the
 /// pull, then loops while refreshing, starting where the pull left it since
-/// the list reports a progress of 1 once refreshing.
+/// the list reports a progress of 1 once refreshing. A loop is a chain of
+/// segments, each starting where the previous one ends, the last one
+/// playing back and forth.
+struct LottieRefreshSegment: Equatable {
+    let from: Double
+    let to: Double
+    let autoReverses: Bool
+}
+
 struct LottieRefreshPlayback {
     enum Step: Equatable {
         case show(Double)
-        case loop(from: Double)
+        case loop([LottieRefreshSegment])
         case keep
     }
 
@@ -60,6 +68,15 @@ struct LottieRefreshPlayback {
         }
         guard !looping else { return .keep }
         looping = true
-        return .loop(from: shown ?? pull)
+        return .loop(Self.loop(from: shown ?? pull))
+    }
+
+    /// Back and forth from where the pull left the animation, never through
+    /// a jump: a release happens at the end of the pull, and wrapping from
+    /// the end to the start would blank a draw-in logo.
+    private static func loop(from start: Double) -> [LottieRefreshSegment] {
+        let backAndForth = LottieRefreshSegment(from: 1, to: 0, autoReverses: true)
+        guard start < 1 else { return [backAndForth] }
+        return [LottieRefreshSegment(from: start, to: 1, autoReverses: false), backAndForth]
     }
 }
