@@ -17,6 +17,10 @@ without a jump. Markers in the animation can split it into a part the pull plays
 > This plugin registers an indicator named `lottie` with mobile-ui's pull-to-refresh indicator registry. That registry
 > is not available in any published version of mobile-ui yet, so the plugin can't be used until it is.
 
+| Android                                                    | iOS                                                |
+|:----------------------------------------------------------:|:--------------------------------------------------:|
+| <img src="art/android.gif" width="320" alt="On Android">  | <img src="art/ios.gif" width="320" alt="On iOS">   |
+
 ## Requirements
 
 - `nativephp/mobile` 4.7 or later
