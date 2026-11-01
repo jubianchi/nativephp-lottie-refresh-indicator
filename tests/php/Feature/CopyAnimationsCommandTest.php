@@ -1,7 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\File;
+use Native\Mobile\Plugins\Plugin;
+use Native\Mobile\Plugins\PluginHookRunner;
 use Native\Mobile\Plugins\PluginManifest;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 beforeEach(function () {
     $this->source = temporaryDirectory();
@@ -16,6 +19,17 @@ it('is the plugin\'s copy_assets hook', function () {
     $manifest = PluginManifest::fromFile(__DIR__.'/../../../nativephp.json');
 
     expect($manifest->hooks['copy_assets'] ?? null)->toBe('nativephp:lottie-refresh-indicator:copy-assets');
+});
+
+it('runs when the core runs the copy_assets hooks', function () {
+    makeDotLottieV1("{$this->source}/splash.lottie", ['layers' => []]);
+    config(['lottie-refresh-indicator.path' => $this->source]);
+    $root = dirname(__DIR__, 3);
+    $plugin = new Plugin('jubianchi/nativephp-lottie-refresh-indicator', 'dev', $root, PluginManifest::fromFile("{$root}/nativephp.json"));
+
+    (new PluginHookRunner('ios', $this->build, 'com.example.app', [], collect([$plugin]), new BufferedOutput))->runCopyAssetsHooks();
+
+    expect("{$this->build}/NativePHP/Resources/animations/splash.lottie")->toBeFile();
 });
 
 it('copies the configured animations into the native project', function () {
