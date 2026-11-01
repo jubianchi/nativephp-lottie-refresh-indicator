@@ -1,3 +1,6 @@
 /.claude/
 /vendor/
 /composer.lock
+/tests/android/.gradle/
+/tests/android/.kotlin/
+/tests/android/build/
