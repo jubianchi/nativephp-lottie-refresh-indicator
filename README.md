@@ -2,7 +2,10 @@
 
 > [!WARNING]
 > This plugin registers an indicator named `lottie` in the pull-to-refresh indicator registry of `nativephp/mobile-ui`.
-> That registry is not available in any published version of mobile-ui yet, so the plugin can't be used until it is.
+> That registry isn't in any published version of mobile-ui yet
+> ([NativePHP/mobile-ui#198](https://github.com/NativePHP/mobile-ui/pull/198), docs in
+> [NativePHP/nativephp.com#600](https://github.com/NativePHP/nativephp.com/pull/600)), so the plugin can't be used
+> until it ships.
 
 | Android                                                    | iOS                                                |
 |:----------------------------------------------------------:|:--------------------------------------------------:|
