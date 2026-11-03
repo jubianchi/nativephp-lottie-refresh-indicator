@@ -14,7 +14,7 @@ tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(stageSources)
 android {
     namespace = "com.jubianchi.nativephp.lottierefreshindicator.tests"
     compileSdk = 36
-    defaultConfig { minSdk = 26 }
+    defaultConfig { minSdk = 29 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

@@ -6,7 +6,7 @@
     ],
     "bridge_functions": [],
     "android": {
-        "min_version": 26,
+        "min_version": 29,
         "init_function": "com.jubianchi.nativephp.lottierefreshindicator.registerLottieRefreshIndicator",
         "dependencies": {
             "implementation": [

@@ -6,6 +6,7 @@
     "require": {
         "php": "^8.3",
         "ext-zip": "*",
+        "nativephp/mobile": "^4.7",
         "nativephp/mobile-ui": "*"
     },
     "autoload": {
