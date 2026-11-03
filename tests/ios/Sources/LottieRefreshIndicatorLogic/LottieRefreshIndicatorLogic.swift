@@ -1,1 +1,1 @@
-../../../../resources/ios/LottieRefreshIndicatorLogic.swift
+../../../../resources/ios/Sources/LottieRefreshIndicatorLogic.swift

@@ -13,6 +13,15 @@ it('requires the NativePHP Mobile core directly', function () {
     expect($composer['require'])->toHaveKey('nativephp/mobile', '^4.7');
 });
 
+it('keeps native sources in the directories the marketplace expects', function () {
+    $root = packageRoot();
+
+    expect(glob("{$root}/resources/ios/Sources/*.swift"))->not->toBeEmpty()
+        ->and(glob("{$root}/resources/android/src/*.kt"))->not->toBeEmpty()
+        ->and(glob("{$root}/resources/ios/*.swift"))->toBeEmpty()
+        ->and(glob("{$root}/resources/android/*.kt"))->toBeEmpty();
+});
+
 it('targets the minimum platform versions NativePHP Mobile v4 supports', function () {
     $manifest = PluginManifest::fromFile(packageRoot().'/nativephp.json');
 

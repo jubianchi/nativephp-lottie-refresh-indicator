@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
 }
 val stageSources = tasks.register<Sync>("stageSources") {
-    from(layout.projectDirectory.dir("../../resources/android")) { include("**/*.kt") }
+    from(layout.projectDirectory.dir("../../resources/android/src")) { include("**/*.kt") }
     from(providers.gradleProperty("mobileUiRoot").map { "$it/resources/android" }) {
         include("NativeUIRefreshIndicators.kt")
     }
