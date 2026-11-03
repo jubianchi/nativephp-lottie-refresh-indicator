@@ -21,42 +21,34 @@ without a jump. Markers in the animation can split it into a part the pull plays
 
 - `nativephp/mobile` 4.7 or later
 - `nativephp/mobile-ui` with the pull-to-refresh indicator registry, which no published version ships yet
-- Android 8.0 (API 26) or later, iOS 18.2 or later
+- Android 10 (API 29) or later, iOS 18.2 or later
 - PHP's `zip` extension, to convert dotLottie files for iOS
 
 ## Installation
 
-Neither this plugin nor mobile-ui's indicator registry is on Packagist yet. If you have a local checkout of mobile-ui
-that includes the registry, add it and this plugin as
-[path repositories](https://getcomposer.org/doc/05-repositories.md#path) in your app's `composer.json`:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../mobile-ui"
-        },
-        {
-            "type": "path",
-            "url": "../nativephp-lottie-refresh-indicator"
-        }
-    ]
-}
-```
-
-`../mobile-ui` must have the code with the registry checked out. Then require both at their development version and
-register the plugin with NativePHP:
+Require the plugin with Composer, then register it with NativePHP:
 
 ```bash
-composer require "nativephp/mobile-ui:@dev" "jubianchi/nativephp-lottie-refresh-indicator:@dev"
+composer require jubianchi/nativephp-lottie-refresh-indicator
 php artisan native:plugin:register jubianchi/nativephp-lottie-refresh-indicator
 ```
 
-If your app already requires a released mobile-ui (for example `^0.9`), the `@dev` requirement replaces it. The plugin
-itself requires `nativephp/mobile-ui` with no version constraint, because Composer sees a path repository's branch as a
-`dev-…` version that no version range would accept; it will require the first release that ships the registry once it
-exists.
+Until mobile-ui publishes its indicator registry, this only works against a local mobile-ui that has it: see
+[Trying it before release](#trying-it-before-release).
+
+## What it doesn't need
+
+- **No events**: the plugin sends nothing to PHP; the list's own `on-refresh` handler runs the refresh.
+- **No permissions**, **no environment variables** and **no secrets**.
+- **No JavaScript API**: the plugin has no bridge function, so there is nothing to call from JavaScript. The indicator
+  is chosen and configured on the list itself, with `refresh-indicator` and `refresh-indicator-options`, and drawn by
+  native code.
+
+## Supported stacks
+
+The indicator works wherever mobile-ui renders a `native:list` with `on-refresh`: the `<native:list>` Blade component
+or the `NativeList` PHP element. It has been tried with Blade screens using `<native:list>`; other ways of building
+mobile-ui screens haven't been tested.
 
 ## Usage
 
@@ -201,10 +193,44 @@ different names.
 
 ## Development
 
+### Trying it before release
+
+Until mobile-ui publishes its indicator registry, use a local checkout of mobile-ui that includes it, and of this
+plugin, as [path repositories](https://getcomposer.org/doc/05-repositories.md#path) in your app's `composer.json`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../mobile-ui"
+        },
+        {
+            "type": "path",
+            "url": "../nativephp-lottie-refresh-indicator"
+        }
+    ]
+}
+```
+
+Then require both at their development version and register the plugin with NativePHP:
+
+```bash
+composer require "nativephp/mobile-ui:@dev" "jubianchi/nativephp-lottie-refresh-indicator:@dev"
+php artisan native:plugin:register jubianchi/nativephp-lottie-refresh-indicator
+```
+
+If your app already requires a released mobile-ui (for example `^0.9`), the `@dev` requirement replaces it. The plugin
+itself requires `nativephp/mobile-ui` with no version constraint for now, because Composer sees a path repository's
+branch as a `dev-…` version that no version range would accept; it will require the first release that ships the
+registry once it exists.
+
+### Tests
+
 The plugin's logic is tested in PHP and on both platforms. Neither native suite renders a Lottie animation: Robolectric
 can't load real Lottie assets, and the iOS suite runs on macOS without UIKit.
 
-### PHP
+#### PHP
 
 The hook copying the animations is tested with Pest, including a run through the core's plugin hook runner:
 
@@ -213,7 +239,7 @@ composer install
 composer test
 ```
 
-### Android
+#### Android
 
 A standalone Robolectric module compiles the plugin's Kotlin sources with mobile-ui's indicator registry, taken from a
 mobile-ui checkout. It requires JDK 21 and the Android SDK 36, and runs with the Gradle wrapper of a NativePHP Mobile
@@ -224,7 +250,7 @@ checkout:
   -p tests/android -PmobileUiRoot=/absolute/path/to/mobile-ui testDebugUnitTest
 ```
 
-### iOS
+#### iOS
 
 A Swift package links the plugin's plain Swift logic (asset choice, bundle lookup, playback) and tests it with Swift
 Testing, on macOS with Xcode 16 or later:
