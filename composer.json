@@ -2,6 +2,7 @@
     "name": "jubianchi/nativephp-lottie-refresh-indicator",
     "description": "A Lottie pull-to-refresh indicator for nativephp/mobile-ui lists, on Android and iOS",
     "type": "nativephp-plugin",
+    "license": "MIT",
     "require": {
         "php": "^8.3",
         "ext-zip": "*",
